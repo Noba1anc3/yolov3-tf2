@@ -20,6 +20,7 @@ def main(_argv):
         yolo = YoloV3Tiny(classes=FLAGS.num_classes)
     else:
         yolo = YoloV3(classes=FLAGS.num_classes)
+
     yolo.summary()
     logging.info('model created')
 

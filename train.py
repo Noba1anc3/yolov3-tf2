@@ -40,14 +40,15 @@ flags.DEFINE_integer('epochs', 2, 'number of epochs')
 flags.DEFINE_integer('batch_size', 8, 'batch size')
 flags.DEFINE_float('learning_rate', 1e-3, 'learning rate')
 flags.DEFINE_integer('num_classes', 80, 'number of classes in the model')
-flags.DEFINE_integer('weights_num_classes', None, 'specify num class for `weights` file if different, '
+flags.DEFINE_integer('weights_num_classes', None,
+                     'specify num class for `weights` file if different, '
                      'useful in transfer learning with different number of classes')
 
 
 def main(_argv):
-    # physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    # for physical_device in physical_devices:
-    #     tf.config.experimental.set_memory_growth(physical_device, True)
+    physical_devices = tf.config.experimental.list_physical_devices('GPU')
+    for physical_device in physical_devices:
+        tf.config.experimental.set_memory_growth(physical_device, True)
 
     if FLAGS.tiny:
         model = YoloV3Tiny(FLAGS.size, training=True,
@@ -59,10 +60,12 @@ def main(_argv):
         anchors = yolo_anchors
         anchor_masks = yolo_anchor_masks
 
-    train_dataset = dataset.load_fake_dataset()
     if FLAGS.dataset:
         train_dataset = dataset.load_tfrecord_dataset(
             FLAGS.dataset, FLAGS.classes, FLAGS.size)
+    else:
+        train_dataset = dataset.load_fake_dataset()
+
     train_dataset = train_dataset.shuffle(buffer_size=512)
     train_dataset = train_dataset.batch(FLAGS.batch_size)
     train_dataset = train_dataset.map(lambda x, y: (
@@ -71,10 +74,12 @@ def main(_argv):
     train_dataset = train_dataset.prefetch(
         buffer_size=tf.data.experimental.AUTOTUNE)
 
-    val_dataset = dataset.load_fake_dataset()
     if FLAGS.val_dataset:
         val_dataset = dataset.load_tfrecord_dataset(
             FLAGS.val_dataset, FLAGS.classes, FLAGS.size)
+    else:
+        val_dataset = dataset.load_fake_dataset()
+
     val_dataset = val_dataset.batch(FLAGS.batch_size)
     val_dataset = val_dataset.map(lambda x, y: (
         dataset.transform_images(x, FLAGS.size),
@@ -90,10 +95,13 @@ def main(_argv):
         # reset top layers
         if FLAGS.tiny:
             model_pretrained = YoloV3Tiny(
-                FLAGS.size, training=True, classes=FLAGS.weights_num_classes or FLAGS.num_classes)
+                FLAGS.size, training=True,
+                classes=FLAGS.weights_num_classes or FLAGS.num_classes)
         else:
             model_pretrained = YoloV3(
-                FLAGS.size, training=True, classes=FLAGS.weights_num_classes or FLAGS.num_classes)
+                FLAGS.size, training=True,
+                classes=FLAGS.weights_num_classes or FLAGS.num_classes)
+
         model_pretrained.load_weights(FLAGS.weights)
 
         if FLAGS.transfer == 'darknet':
@@ -107,7 +115,6 @@ def main(_argv):
                     l.set_weights(model_pretrained.get_layer(
                         l.name).get_weights())
                     freeze_all(l)
-
     else:
         # All other transfer require matching classes
         model.load_weights(FLAGS.weights)

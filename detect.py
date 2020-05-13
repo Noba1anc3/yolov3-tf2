@@ -1,9 +1,10 @@
-import time
-from absl import app, flags, logging
-from absl.flags import FLAGS
 import cv2
+import time
 import numpy as np
 import tensorflow as tf
+from absl import app, flags, logging
+from absl.flags import FLAGS
+
 from yolov3_tf2.models import (
     YoloV3, YoloV3Tiny
 )

@@ -44,12 +44,15 @@ def DarknetConv(x, filters, size, strides=1, batch_norm=True):
     else:
         x = ZeroPadding2D(((1, 0), (1, 0)))(x)  # top left half-padding
         padding = 'valid'
+
     x = Conv2D(filters=filters, kernel_size=size,
                strides=strides, padding=padding,
                use_bias=not batch_norm, kernel_regularizer=l2(0.0005))(x)
+
     if batch_norm:
         x = BatchNormalization()(x)
         x = LeakyReLU(alpha=0.1)(x)
+
     return x
 
 
@@ -70,17 +73,41 @@ def DarknetBlock(x, filters, blocks):
 
 def Darknet(name=None):
     x = inputs = Input([None, None, 3])
+
+    # 416*416*3   -> 416*416*32   filter = 32,  kernel_size = 3, padding = 1, stride = 1
     x = DarknetConv(x, 32, 3)
+
+    # 416*416*32  -> 208*208*64   filter = 64,  kernel_size = 3, padding = 1, stride = 2
+    # 208*208*64  -> 208*208*32   filter = 32,  kernel_size = 1, padding = 1, stride = 1
+    # 208*208*32  -> 208*208*64   filter = 64,  kernel_size = 3, padding = 1, stride = 1
     x = DarknetBlock(x, 64, 1)
-    x = DarknetBlock(x, 128, 2)  # skip connection
-    x = x_36 = DarknetBlock(x, 256, 8)  # skip connection
+
+    # 208*208*64  -> 104*104*128  filter = 128, kernel_size = 3, padding = 1, stride = 2
+    # 104*104*128 -> 104*104*64   filter = 64,  kernel_size = 1, padding = 1, stride = 1
+    # 104*104*64  -> 104*104*128  filter = 128, kernel_size = 3, padding = 1, stride = 1
+    x = DarknetBlock(x, 128, 2)
+
+    # 104*104*128 -> 52*52*256    filter = 256, kernel_size = 3, padding = 1, stride = 2
+    # 52*52*256   -> 52*52*128    filter = 128, kernel_size = 1, padding = 1, stride = 1
+    # 52*52*64    -> 52*52*128    filter = 128, kernel_size = 3, padding = 1, stride = 1
+    x = x_36 = DarknetBlock(x, 256, 8)
+
+    # 52*52*256   -> 26*26*512    filter = 512, kernel_size = 3, padding = 1, stride = 2
+    # 26*26*512   -> 26*26*256    filter = 256, kernel_size = 1, padding = 1, stride = 1
+    # 26*26*256   -> 26*26*512    filter = 512, kernel_size = 3, padding = 1, stride = 1
     x = x_61 = DarknetBlock(x, 512, 8)
+
+    # 26*26*512   -> 13*13*1024   filter = 1024, kernel_size = 3, padding = 1, stride = 2
+    # 13*13*1024  -> 13*13*512    filter = 512,  kernel_size = 1, padding = 1, stride = 1
+    # 13*13*512   -> 13*13*1024   filter = 1024, kernel_size = 3, padding = 1, stride = 1
     x = DarknetBlock(x, 1024, 4)
+
     return tf.keras.Model(inputs, (x_36, x_61, x), name=name)
 
 
 def DarknetTiny(name=None):
     x = inputs = Input([None, None, 3])
+
     x = DarknetConv(x, 16, 3)
     x = MaxPool2D(2, 2, 'same')(x)
     x = DarknetConv(x, 32, 3)
@@ -89,11 +116,12 @@ def DarknetTiny(name=None):
     x = MaxPool2D(2, 2, 'same')(x)
     x = DarknetConv(x, 128, 3)
     x = MaxPool2D(2, 2, 'same')(x)
-    x = x_8 = DarknetConv(x, 256, 3)  # skip connection
+    x = x_8 = DarknetConv(x, 256, 3)
     x = MaxPool2D(2, 2, 'same')(x)
     x = DarknetConv(x, 512, 3)
     x = MaxPool2D(2, 1, 'same')(x)
     x = DarknetConv(x, 1024, 3)
+
     return tf.keras.Model(inputs, (x_8, x), name=name)
 
 
@@ -115,7 +143,9 @@ def YoloConv(filters, name=None):
         x = DarknetConv(x, filters, 1)
         x = DarknetConv(x, filters * 2, 3)
         x = DarknetConv(x, filters, 1)
+
         return Model(inputs, x, name=name)(x_in)
+
     return yolo_conv
 
 
@@ -134,17 +164,22 @@ def YoloConvTiny(filters, name=None):
             x = DarknetConv(x, filters, 1)
 
         return Model(inputs, x, name=name)(x_in)
+
     return yolo_conv
 
 
 def YoloOutput(filters, anchors, classes, name=None):
     def yolo_output(x_in):
         x = inputs = Input(x_in.shape[1:])
+
         x = DarknetConv(x, filters * 2, 3)
         x = DarknetConv(x, anchors * (classes + 5), 1, batch_norm=False)
+
         x = Lambda(lambda x: tf.reshape(x, (-1, tf.shape(x)[1], tf.shape(x)[2],
                                             anchors, classes + 5)))(x)
+
         return tf.keras.Model(inputs, x, name=name)(x_in)
+
     return yolo_output
 
 
@@ -253,6 +288,7 @@ def YoloV3Tiny(size=None, channels=3, anchors=yolo_tiny_anchors,
                      name='yolo_boxes_1')(output_1)
     outputs = Lambda(lambda x: yolo_nms(x, anchors, masks, classes),
                      name='yolo_nms')((boxes_0[:3], boxes_1[:3]))
+
     return Model(inputs, outputs, name='yolov3_tiny')
 
 
