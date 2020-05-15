@@ -74,8 +74,7 @@ wget https://pjreddie.com/media/files/yolov3-tiny.weights -O data/yolov3-tiny.we
 ```
 
 ##### Beihang-Pan Url
-```bash
-```
+[Darknet Pre-trained Weights](https://bhpan.buaa.edu.cn:443/link/3D63AB5519CD21232B4E33A6D58B7DEE)
 
 ##### Convert
 ```python
@@ -106,7 +105,7 @@ python detect_video.py --video path_to_file.mp4 --output ./output.avi
 ### Training
 
 I have created a complete tutorial on how to train from scratch using the VOC2012 Dataset.
-See the documentation here https://github.com/zzh8829/yolov3-tf2/blob/master/docs/training_voc.md
+See the documentation here https://github.com/noba1anc3/yolov3-tf2/blob/master/docs/training_voc.md
 
 For customzied training, you need to generate tfrecord following the TensorFlow Object Detection API.
 For example you can use [Microsoft VOTT](https://github.com/Microsoft/VoTT) to generate such dataset.

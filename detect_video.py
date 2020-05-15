@@ -13,9 +13,9 @@ from yolov3_tf2.dataset import transform_images
 from yolov3_tf2.utils import draw_outputs
 
 flags.DEFINE_string('classes', './data/coco.names', 'path to classes file')
-flags.DEFINE_string('weights', './checkpoints/yolov3.tf',
+flags.DEFINE_string('weights', './checkpoints/yolov3-tiny.tf',
                     'path to weights file')
-flags.DEFINE_boolean('tiny', False, 'yolov3 or yolov3-tiny')
+flags.DEFINE_boolean('tiny', True, 'yolov3 or yolov3-tiny')
 flags.DEFINE_integer('size', 416, 'resize images to')
 flags.DEFINE_string('video', 'http://admin:admin@192.168.1.105:8081/',
                     'path to video file or number for webcam)')

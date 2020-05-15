@@ -1,4 +1,4 @@
-import time
+
 import os
 import hashlib
 
@@ -10,9 +10,10 @@ import tqdm
 
 flags.DEFINE_string('data_dir', './data/voc2012_raw/VOCdevkit/VOC2012/',
                     'path to raw PASCAL VOC dataset')
-flags.DEFINE_enum('split', 'train', [
-                  'train', 'val'], 'specify train or val spit')
-flags.DEFINE_string('output_file', './data/voc2012_train.tfrecord', 'outpot dataset')
+flags.DEFINE_enum('split', 'train', ['train', 'val'],
+                  'specify train or val spit')
+flags.DEFINE_string('output_file', './data/voc2012_train.tfrecord',
+                    'outpot dataset')
 flags.DEFINE_string('classes', './data/voc2012.names', 'classes file')
 
 
@@ -95,6 +96,7 @@ def main(_argv):
     image_list = open(os.path.join(
         FLAGS.data_dir, 'ImageSets', 'Main', 'aeroplane_%s.txt' % FLAGS.split)).read().splitlines()
     logging.info("Image list loaded: %d", len(image_list))
+
     for image in tqdm.tqdm(image_list):
         name, _ = image.split()
         annotation_xml = os.path.join(
@@ -103,6 +105,7 @@ def main(_argv):
         annotation = parse_xml(annotation_xml)['annotation']
         tf_example = build_example(annotation, class_map)
         writer.write(tf_example.SerializeToString())
+
     writer.close()
     logging.info("Done")
 
