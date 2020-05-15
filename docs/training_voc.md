@@ -1,5 +1,4 @@
 # Training Instruction
-
 ## VOC 2012 Dataset from Scratch
 
 Full instruction on how to train using VOC 2012 from scratch
@@ -10,7 +9,6 @@ Requirement:
   3. High Speed Internet Connection Preferred
   4. GPU Preferred
 
-
 ### 1. Download Dataset
 
 You can read the full description of dataset [here](http://host.robots.ox.ac.uk/pascal/VOC/)
@@ -18,13 +16,12 @@ You can read the full description of dataset [here](http://host.robots.ox.ac.uk/
 wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar -O ./data/voc2012_raw.tar
 mkdir -p ./data/voc2012_raw
 tar -xf ./data/voc2012_raw.tar -C ./data/voc2012_raw
-ls ./data/voc2012_raw/VOCdevkit/VOC2012 # Explore the dataset
 ```
 
 ### 2. Transform Dataset
 
-See tools/voc2012.py for implementation, this format is based on [tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection). Many fields 
-are not required, I left them there for compatibility with official API.
+See tools/voc2012.py for implementation, this format is based on [tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection).
+Many fields are not required, I left them there for compatibility with official API.
 
 ```bash
 python tools/voc2012.py \
@@ -47,11 +44,12 @@ It will output one random image with label to `output.jpg`
 
 ### 3. Training
 
-You can adjust the parameters based on your setup
+You can adjust the parameters based on your setup.
 
 #### With Transfer Learning
 
-This step requires loading the pretrained darknet (feature extractor) weights.
+This step requires loading the pretrained darknet weights.
+
 ```
 wget https://pjreddie.com/media/files/yolov3.weights -O data/yolov3.weights
 python convert.py
@@ -62,20 +60,21 @@ python train.py \
 	--val_dataset ./data/voc2012_val.tfrecord \
 	--classes ./data/voc2012.names \
 	--num_classes 20 \
-	--mode fit --transfer darknet \
+	--mode fit \
 	--batch_size 16 \
 	--epochs 10 \
+	--transfer darknet \
 	--weights ./checkpoints/yolov3.tf \
 	--weights_num_classes 80 
 ```
 
-Original pretrained yolov3 has 80 classes, here we demonstrated how to
-do transfer learning on 20 classes.
+Original pretrained yolov3 has 80 classes,
+here we demonstrated how to do transfer learning on 20 classes.
 
 #### Training from random weights (NOT RECOMMENDED)
-Training from scratch is very difficult to converge
-The original paper trained darknet 
-on imagenet before training the whole network as well.
+
+Training from scratch is very difficult to converge.
+The original paper trained darknet on imagenet before training the whole network as well.
 
 ```bash
 python train.py \
@@ -83,16 +82,17 @@ python train.py \
 	--val_dataset ./data/voc2012_val.tfrecord \
 	--classes ./data/voc2012.names \
 	--num_classes 20 \
-	--mode fit --transfer none \
+	--mode fit \
 	--batch_size 16 \
 	--epochs 10 \
+	--transfer none
 ```
 
 I have tested this works 100% with correct loss and converging over time.
-Each epoch takes around 10 minutes on single AWS p2.xlarge (Nvidia K80 GPU) Instance.
+Each epoch takes around 10 minutes on single AWS p2.xlarge (nVidia K80 GPU) Instance.
 
-You might see warnings or error messages during training, they are not critical dont' worry too much about them.
-There might be a long wait time between each epoch becaues we are calculating validation loss.
+You might see warnings or error messages during training, they are not critical, don't worry too much about them.
+There might be a long wait time between each epoch because it is calculating validation loss.
 
 ### 4. Inference
 
@@ -113,6 +113,6 @@ python detect.py \
 ```
 
 You should see some detect objects in the standard output and the visualization at `output.jpg`.
-this is just a proof of concept, so it won't be as good as pretrained models.
+This is just a proof of concept, so it won't be as good as pretrained models.
 In my experience, you might need lower score score thershold if you didn't train it enough.
 
