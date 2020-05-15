@@ -21,6 +21,7 @@ tar -xf ./data/voc2012_raw.tar -C ./data/voc2012_raw
 ### 2. Transform Dataset
 
 See tools/voc2012.py for implementation, this format is based on [tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection).
+
 Many fields are not required, I left them there for compatibility with official API.
 
 ```bash
@@ -74,6 +75,7 @@ here we demonstrated how to do transfer learning on 20 classes.
 #### Training from random weights (NOT RECOMMENDED)
 
 Training from scratch is very difficult to converge.
+
 The original paper trained darknet on imagenet before training the whole network as well.
 
 ```bash
@@ -89,9 +91,11 @@ python train.py \
 ```
 
 I have tested this works 100% with correct loss and converging over time.
+
 Each epoch takes around 10 minutes on single AWS p2.xlarge (nVidia K80 GPU) Instance.
 
 You might see warnings or error messages during training, they are not critical, don't worry too much about them.
+
 There might be a long wait time between each epoch because it is calculating validation loss.
 
 ### 4. Inference
@@ -113,6 +117,8 @@ python detect.py \
 ```
 
 You should see some detect objects in the standard output and the visualization at `output.jpg`.
+
 This is just a proof of concept, so it won't be as good as pretrained models.
+
 In my experience, you might need lower score score thershold if you didn't train it enough.
 
