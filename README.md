@@ -1,34 +1,28 @@
 # YoloV3 Implemented in TensorFlow 2.0
-
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zzh8829/yolov3-tf2/blob/master/colab_gpu.ipynb)
 
 This repo provides a clean implementation of YoloV3 in TensorFlow 2.0 using all the best practices.
 
 ## Key Features
-
 - [x] TensorFlow 2.0
+- [x] Tensorflow Serving
+- [x] GPU accelerated
+- [x] Vectorized transformations
 - [x] `yolov3` with pre-trained Weights
 - [x] `yolov3-tiny` with pre-trained Weights
 - [x] Inference example
 - [x] Transfer learning example
+- [x] Input pipeline using `tf.data`
 - [x] Eager mode training with `tf.GradientTape`
 - [x] Graph mode training with `model.fit`
 - [x] Functional model with `tf.keras.layers`
-- [x] Input pipeline using `tf.data`
-- [x] Tensorflow Serving
-- [x] Vectorized transformations
-- [x] GPU accelerated
 - [x] Fully integrated with `absl-py` from [abseil.io](https://abseil.io)
-- [x] Clean implementation
-- [x] Following the best practices
 
 ![demo](https://raw.githubusercontent.com/noba1anc3/yolov3-tf2/master/data/meme_out.jpg)
 ![demo](https://raw.githubusercontent.com/noba1anc3/yolov3-tf2/master/data/street_out.jpg)
 
 ## Usage
-
 ### Installation
-
 #### Conda (Recommended)
 
 ```bash
@@ -65,7 +59,7 @@ wget https://pjreddie.com/media/files/yolov3.weights -O data/yolov3.weights
 ```
 
 ##### BeihangPan Url
-![Link](https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7)
+[Link](https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7)
 
 
 ##### Convert
@@ -89,6 +83,7 @@ python convert.py --weights ./data/yolov3-tiny.weights --output ./checkpoints/yo
 ```
 
 ### Detection
+[IpCamera](https://bhpan.buaa.edu.cn:443/link/D7264D6B5EA7721B214AA17B6A729ED6)
 
 ```bash
 # yolov3
@@ -98,7 +93,8 @@ python detect.py --image ./data/meme.jpg
 python detect.py --weights ./checkpoints/yolov3-tiny.tf --tiny --image ./data/street.jpg
 
 # webcam
-python detect_video.py --video 0
+python detect_video.py --video http://admin:admin@192.168.1.105:8081/
+
 
 # video file
 python detect_video.py --video path_to_file.mp4 --weights ./checkpoints/yolov3-tiny.tf --tiny
@@ -172,10 +168,10 @@ Numbers are obtained with rough calculations from `detect_video.py`
 
 ### RTX 2070 (credit to @AnaRhisT94)
 
-| Detection   | 416x416 |
-|-------------|---------|
-| YoloV3 predict_on_batch     | 29-32ms    | 
-| YoloV3 predict_on_batch + TensorRT     | 22-28ms    | 
+| Detection                          | 416x416    |
+|------------------------------------|------------|
+| YoloV3 predict_on_batch            | 29-32ms    | 
+| YoloV3 predict_on_batch + TensorRT | 22-28ms    | 
 
 
 Darknet version of YoloV3 at 416x416 takes 29ms on Titan X.
@@ -265,9 +261,6 @@ if for some reason you would like to have more boxes you can use the `--yolo_max
 
 ### NAN Loss / Training Failed / Doesn't Converge 
 
-Many people including me have succeeded in training, so the code definitely works
-@LongxingTan in https://github.com/zzh8829/yolov3-tf2/issues/128 provided some of his insights summarized here:
-  
   1. For nan loss, try to make learning rate smaller
   2. Double check the format of your input data. Data input labelled by vott and labelImg is different. so make sure the input box is the right, and check carefully the format is `x1/width,y1/height,x2/width,y2/height` and **NOT** x1,y1,x2,y2, or x,y,w,h
 
