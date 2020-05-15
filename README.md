@@ -41,7 +41,7 @@ conda activate yolov3-tf2-gpu
 pip install -r docs/requirements.txt
 ```
 
-### Nvidia Driver (For GPU)
+### nVidia Driver (For GPU)
 
 ```bash
 # Ubuntu 18.04
@@ -86,10 +86,10 @@ python convert.py --weights ./data/yolov3-tiny.weights --output ./checkpoints/yo
 
 ```bash
 # yolov3
-python detect.py --image ./data/meme.jpg
+python detect.py --image ./demo/meme.jpg
 
 # yolov3-tiny
-python detect.py --weights ./checkpoints/yolov3-tiny.tf --tiny --image ./data/street.jpg
+python detect.py --weights ./checkpoints/yolov3-tiny.tf --tiny --image ./demo/street.jpg
 
 # webcam
 python detect_video.py --video http://admin:admin@192.168.1.105:8081/
@@ -289,9 +289,9 @@ detect.py:
   --classes: path to classes file
     (default: './data/coco.names')
   --image: path to input image
-    (default: './data/girl.png')
+    (default: './demo/meme.png')
   --output: path to output image
-    (default: './output.jpg')
+    (default: './demo/output.jpg')
   --tiny: yolov3 or yolov3-tiny
     (default: 'False')
   --weights: path to weights file
