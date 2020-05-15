@@ -22,8 +22,8 @@ This repo provides a clean implementation of YoloV3 in TensorFlow 2.0 using all 
 - [x] Clean implementation
 - [x] Following the best practices
 
-![demo](https://raw.githubusercontent.com/zzh8829/yolov3-tf2/master/data/meme_out.jpg)
-![demo](https://raw.githubusercontent.com/zzh8829/yolov3-tf2/master/data/street_out.jpg)
+![demo](https://raw.githubusercontent.com/noba1anc3/yolov3-tf2/master/data/meme_out.jpg)
+![demo](https://raw.githubusercontent.com/noba1anc3/yolov3-tf2/master/data/street_out.jpg)
 
 ## Usage
 
@@ -58,35 +58,32 @@ https://www.nvidia.com/Download/index.aspx
 ```
 
 ### Convert pre-trained Darknet weights
-
-
-# yolov3
-## Official Model
+#### yolov3
+##### Official Url
 ```bash
 wget https://pjreddie.com/media/files/yolov3.weights -O data/yolov3.weights
 ```
 
-## BeihangPan Model
-```bash
-https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7
-```
+##### BeihangPan Url
+![Link](https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7)
 
-## Convert
+
+##### Convert
 ```python
 python convert.py --weights ./data/yolov3.weights --output ./checkpoints/yolov3.tf
 ```
 
-# yolov3-tiny
-## Official Model
+#### yolov3-tiny
+##### Official Url
 ```bash
 wget https://pjreddie.com/media/files/yolov3-tiny.weights -O data/yolov3-tiny.weights
 ```
 
-## BeihangPan Model
+##### BeihangPan Url
 ```bash
 ```
 
-## Convert
+##### Convert
 ```python
 python convert.py --weights ./data/yolov3-tiny.weights --output ./checkpoints/yolov3-tiny.tf --tiny
 ```
