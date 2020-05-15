@@ -21,7 +21,6 @@ This repo provides a clean implementation of YoloV3 in TensorFlow 2.0 using all 
 - [x] Fully integrated with `absl-py` from [abseil.io](https://abseil.io)
 - [x] Clean implementation
 - [x] Following the best practices
-- [x] MIT License
 
 ![demo](https://raw.githubusercontent.com/zzh8829/yolov3-tf2/master/data/meme_out.jpg)
 ![demo](https://raw.githubusercontent.com/zzh8829/yolov3-tf2/master/data/street_out.jpg)
@@ -60,13 +59,35 @@ https://www.nvidia.com/Download/index.aspx
 
 ### Convert pre-trained Darknet weights
 
-```bash
+
 # yolov3
+## Official Model
+```bash
 wget https://pjreddie.com/media/files/yolov3.weights -O data/yolov3.weights
+```
+
+## BeihangPan Model
+```bash
+https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7
+```
+
+## Convert
+```python
 python convert.py --weights ./data/yolov3.weights --output ./checkpoints/yolov3.tf
+```
 
 # yolov3-tiny
+## Official Model
+```bash
 wget https://pjreddie.com/media/files/yolov3-tiny.weights -O data/yolov3-tiny.weights
+```
+
+## BeihangPan Model
+```bash
+```
+
+## Convert
+```python
 python convert.py --weights ./data/yolov3-tiny.weights --output ./checkpoints/yolov3-tiny.tf --tiny
 ```
 
@@ -267,8 +288,8 @@ Training definitely won't work if the rendered label doesn't look correct
 convert.py:
   --output: path to output
     (default: './checkpoints/yolov3.tf')
-  --[no]tiny: yolov3 or yolov3-tiny
-    (default: 'false')
+  --tiny: yolov3 or yolov3-tiny
+    (default: 'False')
   --weights: path to weights file
     (default: './data/yolov3.weights')
   --num_classes: number of classes in the model
@@ -282,8 +303,8 @@ detect.py:
     (default: './data/girl.png')
   --output: path to output image
     (default: './output.jpg')
-  --[no]tiny: yolov3 or yolov3-tiny
-    (default: 'false')
+  --tiny: yolov3 or yolov3-tiny
+    (default: 'False')
   --weights: path to weights file
     (default: './checkpoints/yolov3.tf')
   --num_classes: number of classes in the model
@@ -299,8 +320,8 @@ detect_video.py:
     (default: None)
   --output_format: codec used in VideoWriter when saving video to file
     (default: 'XVID)
-  --[no]tiny: yolov3 or yolov3-tiny
-    (default: 'false')
+  --tiny: yolov3 or yolov3-tiny
+    (default: 'False')
   --weights: path to weights file
     (default: './checkpoints/yolov3.tf')
   --num_classes: number of classes in the model
@@ -329,8 +350,8 @@ train.py:
   --size: image size
     (default: '416')
     (an integer)
-  --[no]tiny: yolov3 or yolov3-tiny
-    (default: 'false')
+  --tiny: yolov3 or yolov3-tiny
+    (default: 'False')
   --transfer: <none|darknet|no_output|frozen|fine_tune>: none: Training from scratch, darknet: Transfer darknet, no_output: Transfer all but output, frozen: Transfer and freeze all,
     fine_tune: Transfer all and freeze darknet only
     (default: 'none')
@@ -339,13 +360,6 @@ train.py:
   --weights: path to weights file
     (default: './checkpoints/yolov3.tf')
 ```
-
-## Change Log
-
-#### October 1, 2019
-
-- Updated to Tensorflow to v2.0.0 Release
-
 
 ## References
 

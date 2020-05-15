@@ -1,11 +1,11 @@
 *.h5
 *.weights
 *.tar
+*.mp4
 *.tfrecord
 /checkpoints/*
 /serving/*
 /logs/
-/Untitled.ipynb
 /output.jpg
 /data/voc2012_raw/
 
