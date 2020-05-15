@@ -58,8 +58,8 @@ https://www.nvidia.com/Download/index.aspx
 wget https://pjreddie.com/media/files/yolov3.weights -O data/yolov3.weights
 ```
 
-##### BeihangPan Url
-[Link](https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7)
+##### Beihang-Pan Url
+[Darknet Pre-trained Weights](https://bhpan.buaa.edu.cn:443/link/D04802D07980A67C4DE48F75203E97B7)
 
 
 ##### Convert
@@ -73,7 +73,7 @@ python convert.py --weights ./data/yolov3.weights --output ./checkpoints/yolov3.
 wget https://pjreddie.com/media/files/yolov3-tiny.weights -O data/yolov3-tiny.weights
 ```
 
-##### BeihangPan Url
+##### Beihang-Pan Url
 ```bash
 ```
 
@@ -83,7 +83,7 @@ python convert.py --weights ./data/yolov3-tiny.weights --output ./checkpoints/yo
 ```
 
 ### Detection
-[IpCamera](https://bhpan.buaa.edu.cn:443/link/D7264D6B5EA7721B214AA17B6A729ED6)
+[Android - Ip Camera.apk](https://bhpan.buaa.edu.cn:443/link/D7264D6B5EA7721B214AA17B6A729ED6)
 
 ```bash
 # yolov3
