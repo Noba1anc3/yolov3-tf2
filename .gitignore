@@ -6,6 +6,7 @@
 /checkpoints/*
 /serving/*
 /logs/
+/.idea/
 /output.jpg
 /data/voc2012_raw/
 
