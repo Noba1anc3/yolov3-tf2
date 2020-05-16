@@ -5,9 +5,9 @@ import tensorflow as tf
 from absl import app, flags, logging
 from absl.flags import FLAGS
 
-flags.DEFINE_string('image_dir', '../dataset/train/images', 'images directory')
-flags.DEFINE_string('anno_file', '../dataset/train/train.json', 'annotation file path')
-flags.DEFINE_string('output_prefix', '../dataset/train_', 'prefix of output tfrecord name')
+flags.DEFINE_string('image_dir', '../data/train/images', 'images directory')
+flags.DEFINE_string('anno_file', '../data/train/train.json', 'annotation file path')
+flags.DEFINE_string('output_prefix', '../data/train', 'prefix of output tfrecord name')
 # 所有数据生成tfrecord可能过大，需要存放成多个tfrecord
 
 
@@ -63,38 +63,38 @@ def main(_argv):
     images = json_dict['images']
 
     logging.info("Start to build tfrecord...")
-    for batch in range(len(images) // 4000 + 1):
-        writer = tf.io.TFRecordWriter(FLAGS.output_prefix + str(batch + 1) + '.tfrecord')
+    # for batch in range(len(images) // 4000 + 1):
+    writer = tf.io.TFRecordWriter(FLAGS.output_prefix + '.tfrecord')
 
-        start = 4000 * batch
-        end = min(4000 * (batch + 1), len(images))
+    start = 0  # 4000 * batch
+    end = len(images)  # min(4000 * (batch + 1), len(images))
 
-        for item in tqdm.tqdm(images[start:end]):
+    for item in tqdm.tqdm(images[start:end]):
 
-            image_id, filename, height, width = item['id'], item['file_name'], item['height'], item['width']
+        image_id, filename, height, width = item['id'], item['file_name'], item['height'], item['width']
 
-            bboxes = []
-            labels = []
+        bboxes = []
+        labels = []
 
-            for anno in json_dict['annotations']:
-                if anno['image_id'] == image_id:
-                    bboxes.append(anno['bbox'])
-                    labels.append(id2label[anno['category_id']])
+        for anno in json_dict['annotations']:
+            if anno['image_id'] == image_id:
+                bboxes.append(anno['bbox'])
+                labels.append(id2label[anno['category_id']])
 
-            if len(bboxes) == 0:     # 过滤无标签的图片
-                continue
+        if len(bboxes) == 0:     # 过滤无标签的图片
+            continue
 
-            annotation = {'filename': filename,
-                          'height': height,
-                          'width': width,
-                          'bboxes': bboxes,
-                          'labels': labels}
+        annotation = {'filename': filename,
+                      'height': height,
+                      'width': width,
+                      'bboxes': bboxes,
+                      'labels': labels}
 
-            single_tfrecord = build_single(annotation)
-            writer.write(single_tfrecord.SerializeToString())
+        single_tfrecord = build_single(annotation)
+        writer.write(single_tfrecord.SerializeToString())
 
-        writer.close()
-        logging.info('batch {}/{} finished.'.format(batch + 1, len(images) // 4000 + 1))
+    writer.close()
+    # logging.info('batch {}/{} finished.'.format(batch + 1, len(images) // 4000 + 1))
 
     logging.info('Tfrecord built.')
 
