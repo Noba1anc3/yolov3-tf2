@@ -8,11 +8,11 @@ from absl.flags import FLAGS
 from yolov3_tf2.dataset import load_tfrecord_dataset, transform_images
 from yolov3_tf2.utils import draw_outputs
 
-flags.DEFINE_string('classes', './data/coco.names', 'path to classes file')
+flags.DEFINE_string('classes', '../data/voc2012.names', 'path to classes file')
 flags.DEFINE_integer('size', 416, 'resize images to')
 flags.DEFINE_string(
-    'dataset', './data/voc2012_train.tfrecord', 'path to dataset')
-flags.DEFINE_string('output', './output.jpg', 'path to output image')
+    'dataset', '../data/voc2012_train.tfrecord', 'path to dataset')
+flags.DEFINE_string('output', '../data/output.jpg', 'path to output image')
 flags.DEFINE_integer('yolo_max_boxes', 100, '')
 
 
