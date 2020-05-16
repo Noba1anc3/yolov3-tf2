@@ -5,9 +5,9 @@ import tensorflow as tf
 from absl import app, flags, logging
 from absl.flags import FLAGS
 
-flags.DEFINE_string('image_dir', '/home/j_m/Desktop/train/images', 'images directory')
-flags.DEFINE_string('anno_file', '/home/j_m/Desktop/train/train.json', 'annotation file path')
-flags.DEFINE_string('output_prefix', '/home/j_m/Desktop/train/train_', 'prefix of output tfrecord name')
+flags.DEFINE_string('image_dir', '../dataset/train/images', 'images directory')
+flags.DEFINE_string('anno_file', '../dataset/train/train.json', 'annotation file path')
+flags.DEFINE_string('output_prefix', '../dataset/train_', 'prefix of output tfrecord name')
 # 所有数据生成tfrecord可能过大，需要存放成多个tfrecord
 
 
@@ -35,14 +35,16 @@ def build_single(annotation):
         ymax.append(float(bbox[1] + bbox[3]) / height)
         classes_text.append(annotation['labels'][idx].encode('utf8'))
 
-    single_tfrecord = tf.train.Example(features=tf.train.Features(feature={
-        'image/encoded': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw])),
-        'image/object/bbox/xmin': tf.train.Feature(float_list=tf.train.FloatList(value=xmin)),
-        'image/object/bbox/xmax': tf.train.Feature(float_list=tf.train.FloatList(value=xmax)),
-        'image/object/bbox/ymin': tf.train.Feature(float_list=tf.train.FloatList(value=ymin)),
-        'image/object/bbox/ymax': tf.train.Feature(float_list=tf.train.FloatList(value=ymax)),
-        'image/object/class/text': tf.train.Feature(bytes_list=tf.train.BytesList(value=classes_text)),
-    }))
+    single_tfrecord = tf.train.Example(features=tf.train.Features(
+        feature={
+            'image/encoded': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw])),
+            'image/object/bbox/xmin': tf.train.Feature(float_list=tf.train.FloatList(value=xmin)),
+            'image/object/bbox/xmax': tf.train.Feature(float_list=tf.train.FloatList(value=xmax)),
+            'image/object/bbox/ymin': tf.train.Feature(float_list=tf.train.FloatList(value=ymin)),
+            'image/object/bbox/ymax': tf.train.Feature(float_list=tf.train.FloatList(value=ymax)),
+            'image/object/class/text': tf.train.Feature(bytes_list=tf.train.BytesList(value=classes_text)),
+        }
+    ))
 
     return single_tfrecord
 
@@ -63,14 +65,17 @@ def main(_argv):
     logging.info("Start to build tfrecord...")
     for batch in range(len(images) // 4000 + 1):
         writer = tf.io.TFRecordWriter(FLAGS.output_prefix + str(batch + 1) + '.tfrecord')
+
         start = 4000 * batch
         end = min(4000 * (batch + 1), len(images))
+
         for item in tqdm.tqdm(images[start:end]):
 
             image_id, filename, height, width = item['id'], item['file_name'], item['height'], item['width']
 
             bboxes = []
             labels = []
+
             for anno in json_dict['annotations']:
                 if anno['image_id'] == image_id:
                     bboxes.append(anno['bbox'])
@@ -90,6 +95,7 @@ def main(_argv):
 
         writer.close()
         logging.info('batch {}/{} finished.'.format(batch + 1, len(images) // 4000 + 1))
+
     logging.info('Tfrecord built.')
 
 
