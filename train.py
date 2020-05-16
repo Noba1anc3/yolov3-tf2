@@ -18,7 +18,7 @@ from yolov3_tf2.models import (
 from yolov3_tf2.utils import freeze_all
 import yolov3_tf2.dataset as dataset
 
-flags.DEFINE_string('dataset', './data/train.tfrecord', 'path to dataset')
+flags.DEFINE_string('train_dataset', './data/train.tfrecord', 'path to train dataset')
 flags.DEFINE_string('val_dataset', './data/val.tfrecord', 'path to validation dataset')
 flags.DEFINE_boolean('tiny', False, 'yolov3 or yolov3-tiny')
 flags.DEFINE_string('weights', './checkpoints/yolov3.tf',
@@ -31,8 +31,8 @@ flags.DEFINE_enum('mode', 'fit', ['fit', 'eager_fit', 'eager_tf'],
 flags.DEFINE_enum('transfer', 'darknet',
                   ['none', 'darknet', 'no_output', 'frozen', 'fine_tune'],
                   'none: Training from scratch, '
-                  'darknet: Transfer darknet, '
-                  'no_output: Transfer all but output, '
+                  'darknet: Transfer darknet and freeze it, '
+                  'no_output: Transfer all and freeze them but output, '
                   'frozen: Transfer and freeze all, '
                   'fine_tune: Transfer all and freeze darknet only')
 flags.DEFINE_integer('size', 416, 'image size')
@@ -60,9 +60,9 @@ def main(_argv):
         anchors = yolo_anchors
         anchor_masks = yolo_anchor_masks
 
-    if FLAGS.dataset:
+    if FLAGS.train_dataset:
         train_dataset = dataset.load_tfrecord_dataset(
-            FLAGS.dataset, FLAGS.classes, FLAGS.size)
+            FLAGS.train_dataset, FLAGS.classes, FLAGS.size)
     else:
         train_dataset = dataset.load_fake_dataset()
 

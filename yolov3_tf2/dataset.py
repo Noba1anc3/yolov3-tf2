@@ -77,24 +77,14 @@ def transform_images(x_train, size):
 
 
 # https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/using_your_own_dataset.md#conversion-script-outline-conversion-script-outline
-# Commented out fields are not required in our project
+
 IMAGE_FEATURE_MAP = {
-    # 'image/width': tf.io.FixedLenFeature([], tf.int64),
-    # 'image/height': tf.io.FixedLenFeature([], tf.int64),
-    # 'image/filename': tf.io.FixedLenFeature([], tf.string),
-    # 'image/source_id': tf.io.FixedLenFeature([], tf.string),
-    # 'image/key/sha256': tf.io.FixedLenFeature([], tf.string),
     'image/encoded': tf.io.FixedLenFeature([], tf.string),
-    # 'image/format': tf.io.FixedLenFeature([], tf.string),
     'image/object/bbox/xmin': tf.io.VarLenFeature(tf.float32),
     'image/object/bbox/ymin': tf.io.VarLenFeature(tf.float32),
     'image/object/bbox/xmax': tf.io.VarLenFeature(tf.float32),
     'image/object/bbox/ymax': tf.io.VarLenFeature(tf.float32),
     'image/object/class/text': tf.io.VarLenFeature(tf.string),
-    # 'image/object/class/label': tf.io.VarLenFeature(tf.int64),
-    # 'image/object/difficult': tf.io.VarLenFeature(tf.int64),
-    # 'image/object/truncated': tf.io.VarLenFeature(tf.int64),
-    # 'image/object/view': tf.io.VarLenFeature(tf.string),
 }
 
 
@@ -131,14 +121,15 @@ def load_tfrecord_dataset(file_pattern, class_file, size=416):
 
 def load_fake_dataset():
     x_train = tf.image.decode_jpeg(
-        open('./demo/girl.png', 'rb').read(), channels=3)
+        open('../demo/girl.png', 'rb').read(), channels=3)
     x_train = tf.expand_dims(x_train, axis=0)
 
     labels = [
-        [0.18494931, 0.03049111, 0.9435849,  0.96302897, 0],
-        [0.01586703, 0.35938117, 0.17582396, 0.6069674, 56],
-        [0.09158827, 0.48252046, 0.26967454, 0.6403017, 67]
-    ] + [[0, 0, 0, 0, 0]] * 5
+                [0.18494931, 0.03049111, 0.9435849,  0.96302897, 0],
+                [0.01586703, 0.35938117, 0.17582396, 0.6069674, 56],
+                [0.09158827, 0.48252046, 0.26967454, 0.6403017, 67]
+             ] + [[0, 0, 0, 0, 0]] * 5
+
     y_train = tf.convert_to_tensor(labels, tf.float32)
     y_train = tf.expand_dims(y_train, axis=0)
 

@@ -1,27 +1,22 @@
-import time
+import tensorflow as tf
 from absl import app, flags, logging
 from absl.flags import FLAGS
-import cv2
-import numpy as np
-import tensorflow as tf
+
 from yolov3_tf2.models import (
     YoloV3, YoloV3Tiny
 )
 from yolov3_tf2.dataset import transform_images
 
-from tensorflow.python.eager import def_function
-from tensorflow.python.framework import tensor_spec
-from tensorflow.python.util import nest
-
-flags.DEFINE_string('weights', './checkpoints/yolov3.tf',
+flags.DEFINE_string('weights', '../checkpoints/yolov3.tf',
                     'path to weights file')
 flags.DEFINE_boolean('tiny', False, 'yolov3 or yolov3-tiny')
-flags.DEFINE_string('output', './checkpoints/yolov3.tflite',
+flags.DEFINE_string('output', '../checkpoints/yolov3.tflite',
                     'path to saved_model')
-flags.DEFINE_string('classes', './data/coco.names', 'path to classes file')
-flags.DEFINE_string('image', './data/girl.png', 'path to input image')
+flags.DEFINE_string('classes', '../data/coco.names', 'path to classes file')
+flags.DEFINE_string('image', '../demo/girl.png', 'path to input image')
 flags.DEFINE_integer('num_classes', 80, 'number of classes in the model')
 flags.DEFINE_integer('size', 416, 'image size')
+
 
 # TODO: This is broken DOES NOT WORK !!
 def main(_argv):
@@ -52,7 +47,6 @@ def main(_argv):
     img = tf.expand_dims(img, 0)
     img = transform_images(img, 416)
 
-    t1 = time.time()
     outputs = interpreter.set_tensor(input_details[0]['index'], img)
 
     interpreter.invoke()
@@ -60,6 +54,7 @@ def main(_argv):
     output_data = interpreter.get_tensor(output_details[0]['index'])
 
     print(output_data)
+
 
 if __name__ == '__main__':
     app.run(main)

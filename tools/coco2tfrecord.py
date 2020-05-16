@@ -8,7 +8,6 @@ from absl.flags import FLAGS
 flags.DEFINE_string('image_dir', '../data/train/images', 'images directory')
 flags.DEFINE_string('anno_file', '../data/train/train.json', 'annotation file path')
 flags.DEFINE_string('output_prefix', '../data/train', 'prefix of output tfrecord name')
-# 所有数据生成tfrecord可能过大，需要存放成多个tfrecord
 
 
 def build_single(annotation):
@@ -63,13 +62,9 @@ def main(_argv):
     images = json_dict['images']
 
     logging.info("Start to build tfrecord...")
-    # for batch in range(len(images) // 4000 + 1):
     writer = tf.io.TFRecordWriter(FLAGS.output_prefix + '.tfrecord')
 
-    start = 0  # 4000 * batch
-    end = len(images)  # min(4000 * (batch + 1), len(images))
-
-    for item in tqdm.tqdm(images[start:end]):
+    for item in tqdm.tqdm(images):
 
         image_id, filename, height, width = item['id'], item['file_name'], item['height'], item['width']
 
@@ -94,7 +89,6 @@ def main(_argv):
         writer.write(single_tfrecord.SerializeToString())
 
     writer.close()
-    # logging.info('batch {}/{} finished.'.format(batch + 1, len(images) // 4000 + 1))
 
     logging.info('Tfrecord built.')
 
