@@ -22,7 +22,7 @@ This repo provides a clean implementation of YoloV3 in TensorFlow 2.0 using all 
 
 ## Wiki
 [Yolo-v3 Simple Introduction](https://github.com/Noba1anc3/yolov3-tf2/wiki/YoloV3)  
-[Design Documentary](https://github.com/Noba1anc3/yolov3-tf2/wiki/Design-Documentary)
+[Project Design Documentation](https://github.com/Noba1anc3/yolov3-tf2/wiki/Design-Documentary)
 
 ## Usage
 ### Installation
