@@ -12,17 +12,21 @@ This repo provides a clean implementation of YoloV3 in TensorFlow 2.0 using all 
 - [x] Inference example
 - [x] Transfer learning Options
 - [x] Input pipeline using `tf.data`
-- [x] Eager mode training with `tf.GradientTape`
 - [x] Graph mode training with `model.fit`
+- [x] Eager mode training with `tf.GradientTape`
 - [x] Functional model with `tf.keras.layers`
 - [x] Fully integrated with `absl-py` from [abseil.io](https://abseil.io)
 
 ![demo](https://raw.githubusercontent.com/noba1anc3/yolov3-tf2/master/data/meme_out.jpg)
 ![demo](https://raw.githubusercontent.com/noba1anc3/yolov3-tf2/master/data/street_out.jpg)
 
+## Wiki
+[Yolo-v3 Simple Introduction](https://github.com/Noba1anc3/yolov3-tf2/wiki/YoloV3)  
+[Project Design Documentation](https://github.com/Noba1anc3/yolov3-tf2/wiki/Design-Documentary)
+
 ## Usage
 ### Installation
-#### Conda (Recommended)
+#### conda (recommended)
 
 ```bash
 # Tensorflow CPU
@@ -34,7 +38,7 @@ conda env create -f docs/conda-gpu.yml
 conda activate yolov3-tf2-gpu
 ```
 
-#### Pip
+#### pip
 
 ```bash
 pip install -r docs/requirements.txt
