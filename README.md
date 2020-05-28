@@ -7,11 +7,10 @@ This repo provides a clean implementation of YoloV3 in TensorFlow 2.0 using all 
 - [x] TensorFlow 2.0
 - [x] Tensorflow Serving
 - [x] GPU accelerated
-- [x] Vectorized transformations
 - [x] `yolov3` with pre-trained Weights
 - [x] `yolov3-tiny` with pre-trained Weights
 - [x] Inference example
-- [x] Transfer learning example
+- [x] Transfer learning Options
 - [x] Input pipeline using `tf.data`
 - [x] Eager mode training with `tf.GradientTape`
 - [x] Graph mode training with `model.fit`

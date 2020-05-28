@@ -23,23 +23,27 @@ flags.DEFINE_string('val_dataset', './data/val.tfrecord', 'path to validation da
 flags.DEFINE_boolean('tiny', False, 'yolov3 or yolov3-tiny')
 flags.DEFINE_string('weights', './checkpoints/yolov3.tf',
                     'path to weights file')
-flags.DEFINE_string('classes', './data/company_articles.names', 'path to classes file')
-flags.DEFINE_enum('mode', 'fit', ['fit', 'eager_fit', 'eager_tf'],
+flags.DEFINE_string('classes', './data/trash.names', 'path to classes file')
+flags.DEFINE_enum('mode', 'eager_tf', ['fit', 'eager_fit', 'eager_tf'],
                   'fit: model.fit, '
                   'eager_fit: model.fit(run_eagerly=True), '
                   'eager_tf: custom GradientTape')
-flags.DEFINE_enum('transfer', 'darknet',
-                  ['none', 'darknet', 'no_output', 'frozen', 'fine_tune'],
+flags.DEFINE_enum('transfer', 'no_output',
+                  ['none',
+                   'darknet', 'no_output',
+                   'frozen', 'fine_tune_1', 'fine_tune_2', 'continue'],
                   'none: Training from scratch, '
                   'darknet: Transfer darknet and freeze it, '
-                  'no_output: Transfer all and freeze them but output, '
+                  'no_output: Transfer all and freeze them but yolo output, '
                   'frozen: Transfer and freeze all, '
-                  'fine_tune: Transfer all and freeze darknet only')
+                  'fine_tune_1: Transfer all and freeze darknet only'
+                  'fine_tune_2: Transfer all and freeze them but yolo output'
+                  'continue: Transfer all and freeze nothing')
 flags.DEFINE_integer('size', 416, 'image size')
-flags.DEFINE_integer('epochs', 10, 'number of epochs')
-flags.DEFINE_integer('batch_size', 20, 'batch size')
+flags.DEFINE_integer('epochs', 50, 'number of epochs')
+flags.DEFINE_integer('batch_size', 3, 'batch size')
 flags.DEFINE_float('learning_rate', 1e-3, 'learning rate')
-flags.DEFINE_integer('num_classes', 3, 'number of classes in the model')
+flags.DEFINE_integer('num_classes', 44, 'number of classes in the model')
 flags.DEFINE_integer('weights_num_classes', 80,
                      'specify num class for `weights` file if different, '
                      'useful in transfer learning with different number of classes')
@@ -65,6 +69,9 @@ def main(_argv):
             FLAGS.train_dataset, FLAGS.classes, FLAGS.size)
     else:
         train_dataset = dataset.load_fake_dataset()
+    num_of_data = 0
+    for _ in train_dataset:
+        num_of_data += 1
 
     train_dataset = train_dataset.shuffle(buffer_size=512)
     train_dataset = train_dataset.batch(FLAGS.batch_size)
@@ -104,27 +111,33 @@ def main(_argv):
 
         model_pretrained.load_weights(FLAGS.weights)
 
-        if FLAGS.transfer == 'darknet':
+        if FLAGS.transfer == 'darknet':  # 加载darknet层的参数并冻结
             model.get_layer('yolo_darknet').set_weights(
                 model_pretrained.get_layer('yolo_darknet').get_weights())
             freeze_all(model.get_layer('yolo_darknet'))
 
-        elif FLAGS.transfer == 'no_output':
+        elif FLAGS.transfer == 'no_output':  # 加载除输出层以外的参数并冻结
             for l in model.layers:
                 if not l.name.startswith('yolo_output'):
                     l.set_weights(model_pretrained.get_layer(
                         l.name).get_weights())
                     freeze_all(l)
-    else:
+    else:  # 迁移整个网络的所有参数并冻结某些层
         # All other transfer require matching classes
         model.load_weights(FLAGS.weights)
-        if FLAGS.transfer == 'fine_tune':
+        if FLAGS.transfer == 'fine_tune_1':  # 迁移整个网络所有参数并冻结yolo_darknet
             # freeze darknet and fine tune other layers
             darknet = model.get_layer('yolo_darknet')
             freeze_all(darknet)
-        elif FLAGS.transfer == 'frozen':
+        elif FLAGS.tranfer == 'fine_tune_2':
+            for l in model.layers:
+                if not l.name.startswith('yolo_output'):
+                    freeze_all(l)
+        elif FLAGS.transfer == 'frozen':   # 迁移整个网络所有参数并冻结所有参数
             # freeze everything
             freeze_all(model)
+        elif FLAGS.transfer == 'continue':
+            pass
 
     optimizer = tf.keras.optimizers.Adam(lr=FLAGS.learning_rate)
     loss = [YoloLoss(anchors[mask], classes=FLAGS.num_classes)
@@ -135,47 +148,56 @@ def main(_argv):
         # Non eager graph mode is recommended for real training
 
         avg_loss = tf.keras.metrics.Mean('loss', dtype=tf.float32)
-        avg_val_loss = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
+        # avg_val_loss = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
+
+        num_of_batch = int(np.ceil(num_of_data / FLAGS.batch_size))
+        logging.info("num of data: {}, batch size: {}, num of batch: {}".format(
+            num_of_data, FLAGS.batch_size, num_of_batch))
 
         for epoch in range(1, FLAGS.epochs + 1):
             for batch, (images, labels) in enumerate(train_dataset):
                 with tf.GradientTape() as tape:
-                    outputs = model(images, training=True)
+
                     regularization_loss = tf.reduce_sum(model.losses)
+
+                    outputs = model(images, training=True)
                     pred_loss = []
                     for output, label, loss_fn in zip(outputs, labels, loss):
                         pred_loss.append(loss_fn(label, output))
-                    total_loss = tf.reduce_sum(pred_loss) + regularization_loss
+                    without_reg_loss = tf.reduce_sum(pred_loss)
+
+                    total_loss = without_reg_loss + regularization_loss
 
                 grads = tape.gradient(total_loss, model.trainable_variables)
                 optimizer.apply_gradients(
                     zip(grads, model.trainable_variables))
 
-                logging.info("{}_train_{}, {}, {}".format(
+                logging.info("epoch_{}_batch_{}: total_loss: {}, {}".format(
                     epoch, batch, total_loss.numpy(),
                     list(map(lambda x: np.sum(x.numpy()), pred_loss))))
                 avg_loss.update_state(total_loss)
 
-            for batch, (images, labels) in enumerate(val_dataset):
-                outputs = model(images)
-                regularization_loss = tf.reduce_sum(model.losses)
-                pred_loss = []
-                for output, label, loss_fn in zip(outputs, labels, loss):
-                    pred_loss.append(loss_fn(label, output))
-                total_loss = tf.reduce_sum(pred_loss) + regularization_loss
-
-                logging.info("{}_val_{}, {}, {}".format(
-                    epoch, batch, total_loss.numpy(),
-                    list(map(lambda x: np.sum(x.numpy()), pred_loss))))
-                avg_val_loss.update_state(total_loss)
-
-            logging.info("{}, train: {}, val: {}".format(
-                epoch,
-                avg_loss.result().numpy(),
-                avg_val_loss.result().numpy()))
+            # for batch, (images, labels) in enumerate(val_dataset):
+            #     outputs = model(images)
+            #     regularization_loss = tf.reduce_sum(model.losses)
+            #     pred_loss = []
+            #     for output, label, loss_fn in zip(outputs, labels, loss):
+            #         pred_loss.append(loss_fn(label, output))
+            #     total_loss = tf.reduce_sum(pred_loss) + regularization_loss
+            #
+            #     logging.info("{}_val_{}, {}, {}".format(
+            #         epoch, batch, total_loss.numpy(),
+            #         list(map(lambda x: np.sum(x.numpy()), pred_loss))))
+            #     avg_val_loss.update_state(total_loss)
+            #
+            # logging.info("{}, train: {}, val: {}".format(
+            #     epoch,
+            #     avg_loss.result().numpy(),
+            #     avg_val_loss.result().numpy()))
 
             avg_loss.reset_states()
-            avg_val_loss.reset_states()
+            # avg_val_loss.reset_states()
+
             model.save_weights(
                 'checkpoints/yolov3_train_{}.tf'.format(epoch))
     else:
