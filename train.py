@@ -18,7 +18,7 @@ from yolov3_tf2.models import (
 from yolov3_tf2.utils import freeze_all
 import yolov3_tf2.dataset as dataset
 
-flags.DEFINE_string('train_dataset', './data/train.tfrecord', 'path to train dataset')
+flags.DEFINE_string('train_dataset', './data/val.tfrecord', 'path to train dataset')
 flags.DEFINE_string('val_dataset', './data/val.tfrecord', 'path to validation dataset')
 flags.DEFINE_boolean('tiny', False, 'yolov3 or yolov3-tiny')
 flags.DEFINE_string('weights', './checkpoints/yolov3.tf',
@@ -55,8 +55,7 @@ def main(_argv):
         tf.config.experimental.set_memory_growth(physical_device, True)
 
     if FLAGS.tiny:
-        model = YoloV3Tiny(FLAGS.size, training=True,
-                           classes=FLAGS.num_classes)
+        model = YoloV3Tiny(FLAGS.size, training=True, classes=FLAGS.num_classes)
         anchors = yolo_tiny_anchors
         anchor_masks = yolo_tiny_anchor_masks
     else:
@@ -148,7 +147,7 @@ def main(_argv):
         # Non eager graph mode is recommended for real training
 
         avg_loss = tf.keras.metrics.Mean('loss', dtype=tf.float32)
-        # avg_val_loss = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
+        avg_val_loss = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
 
         num_of_batch = int(np.ceil(num_of_data / FLAGS.batch_size))
         logging.info("num of data: {}, batch size: {}, num of batch: {}".format(
@@ -161,6 +160,7 @@ def main(_argv):
                     regularization_loss = tf.reduce_sum(model.losses)
 
                     outputs = model(images, training=True)
+
                     pred_loss = []
                     for output, label, loss_fn in zip(outputs, labels, loss):
                         pred_loss.append(loss_fn(label, output))
@@ -173,30 +173,35 @@ def main(_argv):
                     zip(grads, model.trainable_variables))
 
                 logging.info("epoch_{}_batch_{}: total_loss: {}, {}".format(
-                    epoch, batch, total_loss.numpy(),
+                    epoch, batch+1, total_loss.numpy(),
                     list(map(lambda x: np.sum(x.numpy()), pred_loss))))
                 avg_loss.update_state(total_loss)
 
-            # for batch, (images, labels) in enumerate(val_dataset):
-            #     outputs = model(images)
-            #     regularization_loss = tf.reduce_sum(model.losses)
-            #     pred_loss = []
-            #     for output, label, loss_fn in zip(outputs, labels, loss):
-            #         pred_loss.append(loss_fn(label, output))
-            #     total_loss = tf.reduce_sum(pred_loss) + regularization_loss
-            #
-            #     logging.info("{}_val_{}, {}, {}".format(
-            #         epoch, batch, total_loss.numpy(),
-            #         list(map(lambda x: np.sum(x.numpy()), pred_loss))))
-            #     avg_val_loss.update_state(total_loss)
-            #
-            # logging.info("{}, train: {}, val: {}".format(
-            #     epoch,
-            #     avg_loss.result().numpy(),
-            #     avg_val_loss.result().numpy()))
+            for batch, (images, labels) in enumerate(val_dataset):
+
+                outputs = model(images)
+
+                regularization_loss = tf.reduce_sum(model.losses)
+
+                pred_loss = []
+                for output, label, loss_fn in zip(outputs, labels, loss):
+                    pred_loss.append(loss_fn(label, output))
+                without_reg_loss = tf.reduce_sum(pred_loss)
+
+                total_loss = without_reg_loss + regularization_loss
+
+                logging.info("{}_val_{}, {}, {}".format(
+                    epoch, batch, total_loss.numpy(),
+                    list(map(lambda x: np.sum(x.numpy()), pred_loss))))
+                avg_val_loss.update_state(total_loss)
+
+            logging.info("{}, train: {}, val: {}".format(
+                epoch,
+                avg_loss.result().numpy(),
+                avg_val_loss.result().numpy()))
 
             avg_loss.reset_states()
-            # avg_val_loss.reset_states()
+            avg_val_loss.reset_states()
 
             model.save_weights(
                 'checkpoints/yolov3_train_{}.tf'.format(epoch))

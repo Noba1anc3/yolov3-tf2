@@ -77,27 +77,27 @@ def Darknet(name=None):
     # 416*416*3   -> 416*416*32   filter = 32,  kernel_size = 3, padding = 1, stride = 1
     x = DarknetConv(x, 32, 3)
 
-    # 416*416*32  -> 208*208*64   filter = 64,  kernel_size = 3, padding = 1, stride = 2
+    # 416*416*32  -> 208*208*64   filter = 64,  kernel_size = 3, padding = 0, stride = 2
     # 208*208*64  -> 208*208*32   filter = 32,  kernel_size = 1, padding = 1, stride = 1
     # 208*208*32  -> 208*208*64   filter = 64,  kernel_size = 3, padding = 1, stride = 1
     x = DarknetBlock(x, 64, 1)
 
-    # 208*208*64  -> 104*104*128  filter = 128, kernel_size = 3, padding = 1, stride = 2
+    # 208*208*64  -> 104*104*128  filter = 128, kernel_size = 3, padding = 0, stride = 2
     # 104*104*128 -> 104*104*64   filter = 64,  kernel_size = 1, padding = 1, stride = 1
     # 104*104*64  -> 104*104*128  filter = 128, kernel_size = 3, padding = 1, stride = 1
     x = DarknetBlock(x, 128, 2)
 
-    # 104*104*128 -> 52*52*256    filter = 256, kernel_size = 3, padding = 1, stride = 2
+    # 104*104*128 -> 52*52*256    filter = 256, kernel_size = 3, padding = 0, stride = 2
     # 52*52*256   -> 52*52*128    filter = 128, kernel_size = 1, padding = 1, stride = 1
-    # 52*52*64    -> 52*52*128    filter = 128, kernel_size = 3, padding = 1, stride = 1
+    # 52*52*128   -> 52*52*256    filter = 256, kernel_size = 3, padding = 1, stride = 1
     x = x_36 = DarknetBlock(x, 256, 8)
 
-    # 52*52*256   -> 26*26*512    filter = 512, kernel_size = 3, padding = 1, stride = 2
+    # 52*52*256   -> 26*26*512    filter = 512, kernel_size = 3, padding = 0, stride = 2
     # 26*26*512   -> 26*26*256    filter = 256, kernel_size = 1, padding = 1, stride = 1
     # 26*26*256   -> 26*26*512    filter = 512, kernel_size = 3, padding = 1, stride = 1
     x = x_61 = DarknetBlock(x, 512, 8)
 
-    # 26*26*512   -> 13*13*1024   filter = 1024, kernel_size = 3, padding = 1, stride = 2
+    # 26*26*512   -> 13*13*1024   filter = 1024, kernel_size = 3, padding = 0, stride = 2
     # 13*13*1024  -> 13*13*512    filter = 512,  kernel_size = 1, padding = 1, stride = 1
     # 13*13*512   -> 13*13*1024   filter = 1024, kernel_size = 3, padding = 1, stride = 1
     x = DarknetBlock(x, 1024, 4)
@@ -198,8 +198,7 @@ def yolo_boxes(pred, anchors, classes):
     grid = tf.meshgrid(tf.range(grid_size), tf.range(grid_size))
     grid = tf.expand_dims(tf.stack(grid, axis=-1), axis=2)  # [gx, gy, 1, 2]
 
-    box_xy = (box_xy + tf.cast(grid, tf.float32)) / \
-        tf.cast(grid_size, tf.float32)
+    box_xy = (box_xy + tf.cast(grid, tf.float32)) / tf.cast(grid_size, tf.float32)
     box_wh = tf.exp(box_wh) * anchors
 
     box_x1y1 = box_xy - box_wh / 2

@@ -15,6 +15,7 @@ def transform_targets_for_output(y_true, grid_size, anchor_idxs):
     indexes = tf.TensorArray(tf.int32, 1, dynamic_size=True)
     updates = tf.TensorArray(tf.float32, 1, dynamic_size=True)
     idx = 0
+
     for i in tf.range(N):
         for j in tf.range(tf.shape(y_true)[1]):
             if tf.equal(y_true[i][j][2], 0):
@@ -50,13 +51,16 @@ def transform_targets(y_train, anchors, anchor_masks, size):
     # calculate anchor index for true boxes
     anchors = tf.cast(anchors, tf.float32)
     anchor_area = anchors[..., 0] * anchors[..., 1]
+
     box_wh = y_train[..., 2:4] - y_train[..., 0:2]
     box_wh = tf.tile(tf.expand_dims(box_wh, -2),
                      (1, 1, tf.shape(anchors)[0], 1))
+
     box_area = box_wh[..., 0] * box_wh[..., 1]
     intersection = tf.minimum(box_wh[..., 0], anchors[..., 0]) * \
         tf.minimum(box_wh[..., 1], anchors[..., 1])
     iou = intersection / (box_area + anchor_area - intersection)
+
     anchor_idx = tf.cast(tf.argmax(iou, axis=-1), tf.float32)
     anchor_idx = tf.expand_dims(anchor_idx, axis=-1)
 
